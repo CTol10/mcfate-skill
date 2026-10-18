@@ -94,6 +94,19 @@ def _coupon_hint(item: MenuItem, checks: Sequence[coupon_lib.CouponCheck]) -> st
     return "当前券与这款不匹配，未计入节省"
 
 
+def _coupon_summary(picked: Sequence[Candidate], hints: Dict[str, str]) -> str:
+    """多候选共用一行优惠说明：只说能验证的部分，不把未验证的券算成优惠。"""
+    texts = {hints.get(candidate.code, "") for candidate in picked}
+    if not texts or texts == {""}:
+        return "未计入任何优惠"
+    if len(texts) == 1:
+        return texts.pop()
+    usable = [candidate.item.name for candidate in picked if "覆盖这款" in hints.get(candidate.code, "")]
+    if usable:
+        return f"{'、'.join(usable)} 有券覆盖，其余未验证；实际优惠以官方算价为准"
+    return "券的适用范围/门槛未全部返回，未计入节省"
+
+
 def cmd_recommend(args: argparse.Namespace) -> int:
     try:
         payload = _expand(_load_payload(args.input))
@@ -171,20 +184,19 @@ def cmd_recommend(args: argparse.Namespace) -> int:
         for coupon in coupon_rows:
             checks.append(coupon_lib.check(coupon, [candidate.code], candidate.item.price))
 
-    blocks = [
-        render.candidate_block(index, candidate, budget, _coupon_hint(candidate.item, checks))
-        for index, candidate in enumerate(picked)
-    ]
-
     store = payload.get("store") or {}
+    # 回合结构：盲盒与单结果走“揭晓”，多候选走“摆盘”。动作只在回合末尾出现一次。
+    turn = "reveal" if (mode == "blindbox" or count == 1) else "board"
+    hints = {candidate.code: _coupon_hint(candidate.item, checks) for candidate in picked}
+
     result: Dict[str, Any] = {
         "ok": True,
         "mode": mode,
         "style": style,
         "budget": budget,
         "seed": seed,
+        "turn": turn,
         "header": render.header(mode, style, budget, store.get("name")),
-        "candidates": blocks,
         "detail": [candidate.to_dict() for candidate in picked],
         "meta": {
             "menu_total": len(menu_items),
@@ -197,9 +209,28 @@ def cmd_recommend(args: argparse.Namespace) -> int:
             "coupon_status": coupon_status,
             "coupon_note": coupon_note,
             "warnings": warnings,
+            # 硬性：本轮输出后必须停下等用户选，不得自行核价/下单/再抽
+            "stop_after_turn": True,
         },
-        "next_actions": list(render.NEXT_ACTIONS),
     }
+
+    if turn == "reveal":
+        card = render.reveal_block(picked[0], budget, seed, style, hints[picked[0].code])
+        result["sign"] = card["sign"]
+        result["candidates"] = [card]
+        result["reveal_lines"] = card["lines"]
+    else:
+        entries = [render.board_entry(index, candidate) for index, candidate in enumerate(picked)]
+        result["candidates"] = entries
+        result["board_lines"] = render.board_block(
+            entries,
+            budget,
+            _coupon_summary(picked, hints),
+            len(outcome.dropped),
+        )
+
+    result["actions"] = render.actions_for(turn)
+    result["next_actions"] = [action["label"] for action in result["actions"]]
 
     if mode == "save":
         combos, combo_notes = coupon_lib.suggest_combos(coupon_rows, outcome.kept, budget)
@@ -213,7 +244,12 @@ def cmd_recommend(args: argparse.Namespace) -> int:
                 int(store.get("be_type") or 1),
                 be_code=store.get("be_code"),
             )
-        result["next_actions"] = ["按 pricing_requests 调用 calculate-price", "确认后进入下单流程", "再来一个"]
+        result["actions"] = [
+            {"id": "price", "label": "去核价", "hint": "按 pricing_requests 调用 calculate-price，带券与不带券各一次"},
+            {"id": "again", "label": "换一组组合", "hint": "重新生成组合，避开已看过的"},
+            {"id": "retune", "label": "改预算", "hint": "只改预算上限，其余条件不变"},
+        ]
+        result["next_actions"] = [action["label"] for action in result["actions"]]
 
     _emit(result, args.output)
     return EXIT_OK

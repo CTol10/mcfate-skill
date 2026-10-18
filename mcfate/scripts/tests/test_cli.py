@@ -241,5 +241,95 @@ class CliTest(unittest.TestCase):
         self.assertNotIn("4810", codes)  # 薯条
 
 
+class TurnStructureTest(unittest.TestCase):
+    """回合结构：游戏交互靠它成立，不是靠文案。"""
+
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.profile_path = self.root / "profile.json"
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def _run(self, argv, payload):
+        path = self.root / "payload.json"
+        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            code = cli.main([*argv, "--input", str(path), "--profile", str(self.profile_path)])
+        return code, json.loads(buffer.getvalue())
+
+    def test_decide_is_a_board_turn(self) -> None:
+        _code, out = self._run(["recommend"], {"mode": "decide", "menu": fixtures.MENU_RAW, "seed": 11})
+        self.assertEqual(out["turn"], "board")
+        self.assertIn("board_lines", out)
+        self.assertNotIn("reveal_lines", out)
+        self.assertNotIn("sign", out)
+
+    def test_blindbox_is_a_reveal_turn_with_exactly_one_candidate(self) -> None:
+        _code, out = self._run(["recommend"], {"mode": "blindbox", "menu": fixtures.MENU_RAW, "seed": 11})
+        self.assertEqual(out["turn"], "reveal")
+        self.assertEqual(len(out["candidates"]), 1)
+        self.assertIn("reveal_lines", out)
+        self.assertIsNotNone(out["sign"])
+        self.assertIn("命运盲盒", out["header"])
+
+    def test_count_one_also_reveals(self) -> None:
+        _code, out = self._run(
+            ["recommend"], {"mode": "decide", "menu": fixtures.MENU_RAW, "count": 1, "seed": 11}
+        )
+        self.assertEqual(out["turn"], "reveal")
+        self.assertEqual(len(out["candidates"]), 1)
+
+    def test_turn_forces_the_model_to_stop(self) -> None:
+        _code, out = self._run(["recommend"], {"mode": "decide", "menu": fixtures.MENU_RAW, "seed": 11})
+        self.assertTrue(out["meta"]["stop_after_turn"])
+
+    def test_actions_are_structured_and_listed_once(self) -> None:
+        for mode in ("decide", "blindbox"):
+            _code, out = self._run(["recommend"], {"mode": mode, "menu": fixtures.MENU_RAW, "seed": 11})
+            self.assertEqual(len(out["actions"]), 3)
+            for action in out["actions"]:
+                self.assertTrue(action["label"])
+                self.assertTrue(action["hint"])
+            # next_actions 只是 actions 的标签投影，不得多出一组按钮
+            self.assertEqual(out["next_actions"], [a["label"] for a in out["actions"]])
+
+    def test_candidates_never_carry_their_own_action_buttons(self) -> None:
+        for mode in ("decide", "blindbox"):
+            _code, out = self._run(["recommend"], {"mode": mode, "menu": fixtures.MENU_RAW, "seed": 11})
+            labels = [a["label"] for a in out["actions"]]
+            for candidate in out["candidates"]:
+                joined = "\n".join(candidate["lines"])
+                for label in labels:
+                    self.assertNotIn(label, joined)
+
+    def test_board_puts_budget_and_coupon_in_one_place(self) -> None:
+        _code, out = self._run(
+            ["recommend"], {"mode": "decide", "menu": fixtures.MENU_RAW, "budget": 40, "seed": 11}
+        )
+        lines = out["board_lines"]
+        self.assertEqual(sum(1 for line in lines if line.startswith("预算：")), 1)
+        self.assertEqual(sum(1 for line in lines if line.startswith("优惠：")), 1)
+
+    def test_same_seed_reproduces_the_same_sign(self) -> None:
+        _payload = {"mode": "blindbox", "menu": fixtures.MENU_RAW, "seed": 424242}
+        _code, first = self._run(["recommend"], _payload)
+        _code, second = self._run(["recommend"], _payload)
+        self.assertEqual(first["sign"], second["sign"])
+        self.assertEqual(first["candidates"][0]["code"], second["candidates"][0]["code"])
+
+    def test_save_mode_offers_pricing_action(self) -> None:
+        _code, out = self._run(
+            ["recommend"],
+            {"mode": "save", "menu": fixtures.MENU_RAW, "coupons": fixtures.COUPONS_RAW, "budget": 40, "seed": 5},
+        )
+        ids = [action["id"] for action in out["actions"]]
+        self.assertIn("price", ids)
+        self.assertEqual(out["next_actions"], [a["label"] for a in out["actions"]])
+
+
+
 if __name__ == "__main__":
     unittest.main()

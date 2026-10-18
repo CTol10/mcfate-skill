@@ -209,11 +209,12 @@ def score_item(item: MenuItem, ctx: ScoringContext) -> Score:
     weights = ctx.weights.as_dict()
     total = sum(parts[name] * weights[name] for name in weights)
     if not reasons:
-        # 至少给出一条有据可查的理由，避免空泛的“算法推荐”
+        # 没有可区分的信号时，如实说“这是合规范围内的抽取结果”，
+        # 而不是编一条看起来很有道理的理由。抽签本来就是本产品的核心玩法。
         if item.price is not None:
-            reasons.append(f"官方菜单价 ¥{item.price:.1f}，满足当前预算与排除条件")
+            reasons.append("条件都符合，这一支是抽出来的（同类里没有更强的区分信号）")
         else:
-            reasons.append("菜单内可售，满足当前硬性约束")
+            reasons.append("条件都符合，这一支是抽出来的（菜单未返回价格）")
     return Score(components=parts, total=round(_clamp(total), 4), reasons=reasons, data_gaps=gaps)
 
 

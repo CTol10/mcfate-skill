@@ -1,0 +1,14 @@
+{
+  "mode": "blindbox",
+  "style": "adventure",
+  "budget": 35,
+  "seed": 2026,
+  "exclude": ["汉堡"],
+  "store": {
+    "code": "1234567",
+    "name": "示例门店（到店自取）",
+    "order_type": 1,
+    "be_type": 1
+  },
+  "menu_file": "examples/sample-menu.json"
+}

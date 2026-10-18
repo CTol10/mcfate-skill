@@ -1,10 +1,13 @@
 # 麦门食运局 McFate
 
-> 麦当劳程序员节创意开发大赛参赛作品。非麦当劳官方产品，输出仅供参考；>   
+> 麦当劳程序员节创意开发大赛参赛作品。非麦当劳官方产品，输出仅供参考；
+>   
 > 餐品信息、价格及供应状态以麦当劳官方渠道实时结果为准。
 
-「今天不知道吃什么」这件事，通常不是缺选项，而是缺一个**敢下决定的理由**。  
-McFate 用真实在售菜单做签筒、用可解释的规则做签文，把点餐变成一次可复盘的抽取：  
+「今天不知道吃什么」这件事，通常不是缺选项，而是缺一个**敢下决定的理由**。
+  
+McFate 用真实在售菜单做签筒、用可解释的规则做签文，把点餐变成一次可复盘的抽取：
+  
 推荐要说得清依据，价格要经得起核对，优惠不能靠猜。
 
 ## 一、已实现的能力
@@ -42,9 +45,9 @@ mcfate/
 │   │   ├── coupons.py           # 券判定、组合生成、节省归属
 │   │   ├── pricing.py           # 算价请求构造、预算判定、重排
 │   │   ├── profile.py           # 个人图鉴（原子写入、损坏降级）
-│   │   ├── render.py            # 文本块渲染
+│   │   ├── render.py            # 回合渲染：reveal 揭晓 / board 摆盘
 │   │   └── cli.py               # 子命令编排
-│   └── tests/                   # 78 个单元/端到端测试
+│   └── tests/                   # 109 个单元/端到端测试
 └── examples/                    # 可运行 payload 与真实输出
 ```
 
@@ -66,21 +69,29 @@ mcfate rerank                  → 排序 + 预算判定 + 节省归因
 订单摘要 → 用户明确确认（之后是否下单，由用户走官方渠道决定）
 ```
 
-只读工具：`query-meals`、`query-meal-detail`、`list-nutrition-foods`、  
-`query-store-coupons`、`query-my-coupons`、`query-nearby-stores`、  
+只读工具：`query-meals`、`query-meal-detail`、`list-nutrition-foods`、
+  
+`query-store-coupons`、`query-my-coupons`、`query-nearby-stores`、
+  
 `delivery-query-stores`、`delivery-query-addresses`、`calculate-price`。
 
-**不调用**：`create-order`、`cancel-order`、`auto-bind-coupons`、`draw-lottery`、  
-`mall-create-order`、`party-order-create`。理由：这些会改变账户或产生交易，  
+**不调用**：`create-order`、`cancel-order`、`auto-bind-coupons`、`draw-lottery`、
+  
+`mall-create-order`、`party-order-create`。理由：这些会改变账户或产生交易，
+  
 不属于“推荐”所需的授权范围。
 
 ## 四、算法与券规则（摘要）
 
-- `score = 0.40·novelty + 0.25·preference + 0.20·diversity + 0.15·mission_fit`    
+- `score = 0.40·novelty + 0.25·preference + 0.20·diversity + 0.15·mission_fit`
+    
   （风格可切换：稳妥 0.20/0.35/0.20/0.25，冒险 0.50/0.15/0.15/0.20，精算 0.15/0.20/0.15/0.50）
 - 无历史记录时，novelty / preference / diversity 取中性值并**显式告知**，不把“未知”当“没吃过”。
 - 抽取：前 8 名进池，按 `softmax(score/0.08)` 无放回抽样；同 seed 结果完全一致。
 - 主餐优先：主餐足够时不把饮料/小食当正餐推荐（`classify_role` + `prioritize_main`）。
+- 回合：`turn=reveal` 一次只揭一支（盲盒），`turn=board` 一屏摆完（多候选）；
+  动作只在回合末尾出现一次，`meta.stop_after_turn` 强制停下等用户选。
+- 签号：`sign_no(seed, code)` 确定性派生，同 seed 同餐品恒定，可复现可复盘。
 - 券：`not_applicable` / `needs_extra` / `usable` / `unverified` 四态；门槛未知即 `unverified`。
 - 节省归因必须“同商品、带券与不带券两次算价都成功”，否则不归因到具体券。
 - 凑门槛加购的支出单独列出；预算内凑不到就明说凑不到。
@@ -89,10 +100,11 @@ mcfate rerank                  → 排序 + 预算判定 + 节省归因
 
 ```bash
 cd mcfate/scripts && python3 -m unittest discover -s tests -t .
-# Ran 78 tests ... OK
+# Ran 109 tests ... OK
 ```
 
-覆盖任务书要求的 15 个场景，另加：接口空态/错误态归一化、权重校验、主餐优先、  
+覆盖任务书要求的 15 个场景，另加：回合结构、签号可复现、动作不重复、接口空态/错误态归一化、权重校验、主餐优先、
+  
 档案损坏降级、导入合并、幂等性、输出敏感字段扫描。
 
 ## 六、已知限制与降级
@@ -136,7 +148,8 @@ python3 scripts/mcfate.py profile --menu examples/sample-menu.json
 
 ## 八、与同类作品的差异
 
-榜单里以“省钱/券/预算/多人”为主的项目，核心是**在已选餐品上做最优解**。  
+榜单里以“省钱/券/预算/多人”为主的项目，核心是**在已选餐品上做最优解**。
+  
 McFate 的差异点在决策层而非计算层：
 
 | 维度    | 常见省钱/券类作品 | McFate                        |
@@ -147,7 +160,8 @@ McFate 的差异点在决策层而非计算层：
 | 数据诚实度 | 常用估算价/推算券 | 价格只认 calculate-price，券缺失即标未验证 |
 | 账户副作用 | 可能顺带领券/绑券 | 一律不碰有副作用的接口                   |
 
-> 说明：本地没有 RANKING.md 与榜单项目说明，以上按公开品类做定位对比，>   
+> 说明：本地没有 RANKING.md 与榜单项目说明，以上按公开品类做定位对比，
+>   
 > 报名后应以官方榜单实际描述为准再校正。
 
 ## 九、比赛提交待补事项
