@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "budget": 35.0,
+  "ranked": [
+    {
+      "label": "方案A：龙焰鸡腿堡+可乐（带满30减6券）",
+      "items": [
+        {
+          "code": "521952",
+          "quantity": 1
+        },
+        {
+          "code": "9900008751",
+          "quantity": 1
+        }
+      ],
+      "state": "priced",
+      "payable": 27.5,
+      "original": 33.5,
+      "official_discount": 6.0,
+      "over_budget": false,
+      "note": "官方算价 ¥27.5，官方优惠 ¥6.0",
+      "budget": 35.0
+    },
+    {
+      "label": "方案B：龙焰鸡腿堡+可乐（不带券）",
+      "items": [
+        {
+          "code": "521952",
+          "quantity": 1
+        },
+        {
+          "code": "9900008751",
+          "quantity": 1
+        }
+      ],
+      "state": "priced",
+      "payable": 33.5,
+      "original": 33.5,
+      "official_discount": 0.0,
+      "over_budget": false,
+      "note": "官方算价 ¥33.5，官方未体现优惠",
+      "budget": 35.0
+    },
+    {
+      "label": "方案C：算价失败示例",
+      "items": [
+        {
+          "code": "1100",
+          "quantity": 1
+        }
+      ],
+      "state": "unverified",
+      "payable": null,
+      "original": null,
+      "official_discount": null,
+      "over_budget": null,
+      "note": "官方算价失败：门店繁忙，请稍后重试。本轮不展示最终价格，也不会用估价替代。",
+      "budget": 35.0
+    }
+  ],
+  "recommended": "方案A：龙焰鸡腿堡+可乐（带满30减6券）",
+  "note": "以上金额全部来自 calculate-price 官方算价；未核价方案不展示金额。"
+}

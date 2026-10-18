@@ -1,0 +1,26 @@
+{
+  "_comment": "示例优惠券数据，结构对齐 query-store-coupons 的返回，但券 ID/券码均为虚构，请勿当作真实权益。",
+  "success": true,
+  "code": 200,
+  "message": "请求成功",
+  "data": [
+    {
+      "title": "示例：满30减6元",
+      "couponId": "DEMO-FULL30",
+      "couponCode": "DEMO-FULL30-CODE",
+      "tradeDateTime": "2026-10-31 23:59:59",
+      "threshold": "30",
+      "products": [
+        {"productName": "巨无霸", "productCode": "1100"},
+        {"productName": "龙焰鸡腿堡", "productCode": "521952"}
+      ]
+    },
+    {
+      "title": "示例：麦辣鸡翅立减2元",
+      "couponId": "DEMO-WINGS2",
+      "couponCode": "DEMO-WINGS2-CODE",
+      "tradeDateTime": "2026-10-31 23:59:59",
+      "products": [{"productName": "麦辣鸡翅", "productCode": "1700"}]
+    }
+  ]
+}

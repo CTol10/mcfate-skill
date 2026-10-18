@@ -1,0 +1,16 @@
+{
+  "_comment": "示例 payload：菜单用 menu_file 复用同目录快照，避免把整份菜单塞进请求。",
+  "mode": "decide",
+  "style": "balanced",
+  "budget": 35,
+  "exclude": ["咖啡"],
+  "count": 3,
+  "seed": 2026,
+  "store": {
+    "code": "1234567",
+    "name": "示例门店（到店自取）",
+    "order_type": 1,
+    "be_type": 1
+  },
+  "menu_file": "examples/sample-menu.json"
+}

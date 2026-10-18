@@ -1,0 +1,302 @@
+{
+  "ok": true,
+  "mode": "save",
+  "style": "frugal",
+  "budget": 50.0,
+  "seed": 7,
+  "header": "【麦运省钱 · 精算派】｜示例门店（到店自取）｜预算 ¥50",
+  "candidates": [
+    {
+      "code": "9900015602",
+      "name": "大堡口福三件套",
+      "price": 22.9,
+      "score": 0.84,
+      "lines": [
+        "① 大堡口福三件套 · ¥22.9（官方菜单价）",
+        "　 为什么是它：「单人餐」这个品类在你的记录里还是空白；精算派：菜单现价较划线价低 52%",
+        "　 数据说明：尚无口味偏好记录，偏好分按中性值处理；暂无推荐历史，差异度按中性值处理",
+        "　 预算：¥22.9 在 ¥50 预算内（菜单价，未官方核价）",
+        "　 优惠：当前券与这款不匹配，未计入节省",
+        "　 下一步：就它了（进入核价） / 再来一个 / 换个口味"
+      ]
+    },
+    {
+      "code": "9900015151",
+      "name": "麦麦周末双人餐",
+      "price": 49.9,
+      "score": 0.8168,
+      "lines": [
+        "② 麦麦周末双人餐 · ¥49.9（官方菜单价）",
+        "　 为什么是它：「多人餐」这个品类在你的记录里还是空白；精算派：菜单现价较划线价低 42%",
+        "　 数据说明：尚无口味偏好记录，偏好分按中性值处理；暂无推荐历史，差异度按中性值处理",
+        "　 预算：¥49.9 在 ¥50 预算内（菜单价，未官方核价）",
+        "　 优惠：当前券与这款不匹配，未计入节省",
+        "　 下一步：就它了（进入核价） / 再来一个 / 换个口味"
+      ]
+    },
+    {
+      "code": "9900016073",
+      "name": "龙焰鸡腿堡三件套",
+      "price": 26.9,
+      "score": 0.7797,
+      "lines": [
+        "③ 龙焰鸡腿堡三件套 · ¥26.9（官方菜单价）",
+        "　 为什么是它：「鸡肉汉堡」这个品类你试过，但这款还没在记录里；精算派：菜单现价较划线价低 45%",
+        "　 数据说明：尚无口味偏好记录，偏好分按中性值处理；暂无推荐历史，差异度按中性值处理",
+        "　 预算：¥26.9 在 ¥50 预算内（菜单价，未官方核价）",
+        "　 优惠：当前券与这款不匹配，未计入节省",
+        "　 下一步：就它了（进入核价） / 再来一个 / 换个口味"
+      ]
+    }
+  ],
+  "detail": [
+    {
+      "item": {
+        "code": "9900015602",
+        "name": "大堡口福三件套",
+        "price": 22.9,
+        "original_price": 48.0,
+        "category": "单人餐",
+        "role": "main",
+        "tags": [
+          "大口吃肉好快乐"
+        ],
+        "discount_type": null,
+        "can_with_order": false
+      },
+      "score": {
+        "components": {
+          "novelty": 1.0,
+          "preference": 0.5,
+          "diversity": 0.6,
+          "mission_fit": 1.0
+        },
+        "total": 0.84,
+        "reasons": [
+          "「单人餐」这个品类在你的记录里还是空白",
+          "精算派：菜单现价较划线价低 52%"
+        ],
+        "data_gaps": [
+          "尚无口味偏好记录，偏好分按中性值处理",
+          "暂无推荐历史，差异度按中性值处理"
+        ]
+      },
+      "flags": []
+    },
+    {
+      "item": {
+        "code": "9900015151",
+        "name": "麦麦周末双人餐",
+        "price": 49.9,
+        "original_price": 86.0,
+        "category": "多人餐",
+        "role": "main",
+        "tags": [
+          "多人餐"
+        ],
+        "discount_type": null,
+        "can_with_order": false
+      },
+      "score": {
+        "components": {
+          "novelty": 1.0,
+          "preference": 0.5,
+          "diversity": 0.6,
+          "mission_fit": 0.9537
+        },
+        "total": 0.8168,
+        "reasons": [
+          "「多人餐」这个品类在你的记录里还是空白",
+          "精算派：菜单现价较划线价低 42%"
+        ],
+        "data_gaps": [
+          "尚无口味偏好记录，偏好分按中性值处理",
+          "暂无推荐历史，差异度按中性值处理"
+        ]
+      },
+      "flags": []
+    },
+    {
+      "item": {
+        "code": "9900016073",
+        "name": "龙焰鸡腿堡三件套",
+        "price": 26.9,
+        "original_price": 48.5,
+        "category": "鸡肉汉堡",
+        "role": "main",
+        "tags": [
+          "上新",
+          "韩式辣椒黄油风味"
+        ],
+        "discount_type": null,
+        "can_with_order": false
+      },
+      "score": {
+        "components": {
+          "novelty": 0.65,
+          "preference": 0.5,
+          "diversity": 0.6,
+          "mission_fit": 0.9844
+        },
+        "total": 0.7797,
+        "reasons": [
+          "「鸡肉汉堡」这个品类你试过，但这款还没在记录里",
+          "精算派：菜单现价较划线价低 45%"
+        ],
+        "data_gaps": [
+          "尚无口味偏好记录，偏好分按中性值处理",
+          "暂无推荐历史，差异度按中性值处理"
+        ]
+      },
+      "flags": []
+    }
+  ],
+  "meta": {
+    "menu_total": 13,
+    "kept": 13,
+    "dropped": [],
+    "dropped_count": 0,
+    "history_reliable": true,
+    "recent_used": [],
+    "rejected_used": [],
+    "coupon_status": "ok",
+    "coupon_note": "解析到 2 张结构化券",
+    "warnings": [
+      "已排除小食与饮品候选，避免把配餐当成一顿饭"
+    ]
+  },
+  "next_actions": [
+    "按 pricing_requests 调用 calculate-price",
+    "确认后进入下单流程",
+    "再来一个"
+  ],
+  "combos": [
+    {
+      "label": "用券方案1：示例：满30减6元",
+      "items": [
+        {
+          "code": "521952",
+          "name": "龙焰鸡腿堡",
+          "quantity": 1,
+          "unit_price": 24.0
+        },
+        {
+          "code": "9900008751",
+          "name": "可乐",
+          "quantity": 1,
+          "unit_price": 9.5
+        }
+      ],
+      "estimated_subtotal": 33.5,
+      "coupon": {
+        "title": "示例：满30减6元",
+        "coupon_id": "DEMO-FULL30",
+        "coupon_code": "DEMO-FULL30-CODE",
+        "valid_until": "2026-10-31 23:59:59",
+        "product_codes": [
+          "1100",
+          "521952"
+        ],
+        "threshold": 30.0,
+        "unit_assumed": true,
+        "source": "query-store-coupons"
+      },
+      "notes": [
+        "使用「示例：满30减6元」的适用餐品打底（¥24.0）",
+        "距门槛还差 ¥6.0",
+        "为凑门槛加购「可乐」¥9.5"
+      ]
+    },
+    {
+      "label": "用券方案2：示例：麦辣鸡翅立减2元",
+      "items": [
+        {
+          "code": "1700",
+          "name": "麦辣鸡翅",
+          "quantity": 1,
+          "unit_price": 14.5
+        }
+      ],
+      "estimated_subtotal": 14.5,
+      "coupon": {
+        "title": "示例：麦辣鸡翅立减2元",
+        "coupon_id": "DEMO-WINGS2",
+        "coupon_code": "DEMO-WINGS2-CODE",
+        "valid_until": "2026-10-31 23:59:59",
+        "product_codes": [
+          "1700"
+        ],
+        "unit_assumed": false,
+        "source": "query-store-coupons"
+      },
+      "notes": [
+        "使用「示例：麦辣鸡翅立减2元」的适用餐品打底（¥14.5）"
+      ]
+    }
+  ],
+  "combo_notes": [],
+  "pricing_requests": [
+    {
+      "label": "用券方案1：示例：满30减6元",
+      "with_coupon": {
+        "storeCode": "1234567",
+        "orderType": 1,
+        "beType": 1,
+        "items": [
+          {
+            "productCode": "521952",
+            "quantity": 1,
+            "couponId": "DEMO-FULL30",
+            "couponCode": "DEMO-FULL30-CODE"
+          },
+          {
+            "productCode": "9900008751",
+            "quantity": 1
+          }
+        ]
+      },
+      "without_coupon": {
+        "storeCode": "1234567",
+        "orderType": 1,
+        "beType": 1,
+        "items": [
+          {
+            "productCode": "521952",
+            "quantity": 1
+          },
+          {
+            "productCode": "9900008751",
+            "quantity": 1
+          }
+        ]
+      }
+    },
+    {
+      "label": "用券方案2：示例：麦辣鸡翅立减2元",
+      "with_coupon": {
+        "storeCode": "1234567",
+        "orderType": 1,
+        "beType": 1,
+        "items": [
+          {
+            "productCode": "1700",
+            "quantity": 1,
+            "couponId": "DEMO-WINGS2",
+            "couponCode": "DEMO-WINGS2-CODE"
+          }
+        ]
+      },
+      "without_coupon": {
+        "storeCode": "1234567",
+        "orderType": 1,
+        "beType": 1,
+        "items": [
+          {
+            "productCode": "1700",
+            "quantity": 1
+          }
+        ]
+      }
+    }
+  ]
+}

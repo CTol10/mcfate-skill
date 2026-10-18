@@ -1,0 +1,47 @@
+{
+  "_comment": "rerank 示例：quote 字段应填入 calculate-price 的原始返回（这里用构造数据演示三种状态）。",
+  "budget": 35,
+  "entries": [
+    {
+      "label": "方案A：龙焰鸡腿堡+可乐（带满30减6券）",
+      "items": [{"code": "521952", "quantity": 1}, {"code": "9900008751", "quantity": 1}],
+      "quote": {
+        "success": true,
+        "code": 200,
+        "data": {
+          "originalPrice": 3350,
+          "discount": 600,
+          "price": 2750,
+          "productList": [
+            {"productCode": "521952", "productName": "龙焰鸡腿堡", "quantity": 1, "subtotal": 2400},
+            {"productCode": "9900008751", "productName": "可乐", "quantity": 1, "subtotal": 950}
+          ],
+          "takeWayList": [{"code": "take-in-store", "title": "外带"}]
+        }
+      }
+    },
+    {
+      "label": "方案B：龙焰鸡腿堡+可乐（不带券）",
+      "items": [{"code": "521952", "quantity": 1}, {"code": "9900008751", "quantity": 1}],
+      "quote": {
+        "success": true,
+        "code": 200,
+        "data": {
+          "originalPrice": 3350,
+          "discount": 0,
+          "price": 3350,
+          "productList": [
+            {"productCode": "521952", "productName": "龙焰鸡腿堡", "quantity": 1, "subtotal": 2400},
+            {"productCode": "9900008751", "productName": "可乐", "quantity": 1, "subtotal": 950}
+          ],
+          "takeWayList": [{"code": "take-in-store", "title": "外带"}]
+        }
+      }
+    },
+    {
+      "label": "方案C：算价失败示例",
+      "items": [{"code": "1100", "quantity": 1}],
+      "quote": {"success": false, "code": 500, "message": "门店繁忙，请稍后重试"}
+    }
+  ]
+}

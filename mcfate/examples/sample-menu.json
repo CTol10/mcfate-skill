@@ -1,0 +1,140 @@
+{
+  "_comment": "示例菜单（精简结构）。价格取自麦当劳官方菜单实际返回值（2026-10-18 快照），门店编码为占位符。",
+  "items": [
+    {
+      "code": "1100",
+      "name": "巨无霸",
+      "price": 26.5,
+      "original_price": 26.5,
+      "category": "巨无霸牛鱼肉堡",
+      "tags": [
+        "单品",
+        "100%纯牛肉"
+      ]
+    },
+    {
+      "code": "521900",
+      "name": "咸蛋黄鸡腿蛋月堡",
+      "price": 25.0,
+      "original_price": 25.0,
+      "category": "鸡肉汉堡",
+      "tags": [
+        "上新",
+        "酥脆鸡腿排",
+        "滑嫩蒸蛋"
+      ]
+    },
+    {
+      "code": "9900016073",
+      "name": "龙焰鸡腿堡三件套",
+      "price": 26.9,
+      "original_price": 48.5,
+      "category": "鸡肉汉堡",
+      "tags": [
+        "上新",
+        "韩式辣椒黄油风味"
+      ]
+    },
+    {
+      "code": "521952",
+      "name": "龙焰鸡腿堡",
+      "price": 24.0,
+      "original_price": 24.0,
+      "category": "鸡肉汉堡",
+      "tags": [
+        "上新"
+      ]
+    },
+    {
+      "code": "1450",
+      "name": "麦香鸡",
+      "price": 16.5,
+      "original_price": 16.5,
+      "category": "鸡肉汉堡",
+      "tags": [
+        "单品"
+      ]
+    },
+    {
+      "code": "9900015602",
+      "name": "大堡口福三件套",
+      "price": 22.9,
+      "original_price": 48.0,
+      "category": "单人餐",
+      "tags": [
+        "大口吃肉好快乐"
+      ]
+    },
+    {
+      "code": "9900013304",
+      "name": "人气经典随心配",
+      "price": 14.9,
+      "original_price": 14.9,
+      "category": "随心配",
+      "tags": [
+        "超值百种组合随心配"
+      ]
+    },
+    {
+      "code": "1700",
+      "name": "麦辣鸡翅",
+      "price": 14.5,
+      "original_price": 14.5,
+      "category": "炸鸡",
+      "tags": [
+        "单品",
+        "人气"
+      ]
+    },
+    {
+      "code": "4810",
+      "name": "薯条",
+      "price": 14.5,
+      "original_price": 14.5,
+      "category": "小食",
+      "tags": [
+        "小食"
+      ]
+    },
+    {
+      "code": "9900008751",
+      "name": "可乐",
+      "price": 9.5,
+      "original_price": 9.5,
+      "category": "饮品",
+      "tags": [
+        "冷饮"
+      ]
+    },
+    {
+      "code": "507411",
+      "name": "麦咖啡™美式",
+      "price": 11.9,
+      "original_price": 19.0,
+      "category": "麦咖啡™",
+      "tags": [
+        "限定特惠"
+      ]
+    },
+    {
+      "code": "9900005466",
+      "name": "巨无霸三件套",
+      "price": 37.5,
+      "original_price": 51.0,
+      "category": "巨无霸牛鱼肉堡",
+      "tags": [
+        "套餐"
+      ]
+    },
+    {
+      "code": "9900015151",
+      "name": "麦麦周末双人餐",
+      "price": 49.9,
+      "original_price": 86.0,
+      "category": "多人餐",
+      "tags": [
+        "多人餐"
+      ]
+    }
+  ]
+}
