@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>麦门食运局 McFate · 交互原型</title>
+<style>
+  :root{
+    --bg:#12100e; --panel:#1b1815; --panel-2:#221d19; --line:#2f2823;
+    --text:#f2ece4; --muted:#a29485; --dim:#6f6459;
+    --gold:#f2c14e; --gold-dim:#8a6d28; --red:#e04b3f; --green:#5fa86b;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1100px 600px at 50% -10%, #1e1a15 0%, var(--bg) 60%);
+    color:var(--text); min-height:100vh;
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1080px;margin:0 auto;padding:28px 20px 72px;display:grid;grid-template-columns:1fr 300px;gap:22px}
+  @media (max-width:900px){ .app{grid-template-columns:1fr} }
+
+  header.top{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .brand{font-size:20px;letter-spacing:.12em;font-weight:700}
+  .brand em{font-style:normal;color:var(--gold);font-family:ui-monospace,Menlo,monospace;font-size:13px;letter-spacing:.18em;margin-left:8px}
+  .tag{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+
+  /* 控制区 */
+  .controls{padding:16px;display:flex;flex-direction:column;gap:14px}
+  .field{display:flex;flex-direction:column;gap:7px}
+  .field > span{font-size:11px;color:var(--dim);letter-spacing:.14em}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{
+    flex:1 1 0;min-width:88px;padding:9px 8px;border-radius:10px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    font-size:13px;font-family:inherit;transition:.18s;
+  }
+  .seg button:hover{color:var(--text);border-color:#443a31}
+  .seg button.on{background:linear-gradient(180deg,#3a2f1c,#2a2318);border-color:var(--gold-dim);color:var(--gold)}
+  .row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+  .row .field{flex:0 0 auto}
+  input[type=number],input[type=text]{
+    width:104px;padding:9px 10px;border-radius:10px;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--text);font-size:14px;font-family:ui-monospace,Menlo,monospace;
+  }
+  input:focus{outline:none;border-color:var(--gold-dim)}
+  .draw{
+    margin-left:auto;padding:11px 26px;border-radius:11px;cursor:pointer;font-family:inherit;
+    font-size:15px;font-weight:700;letter-spacing:.16em;color:#1a1409;border:none;
+    background:linear-gradient(180deg,#f6cf6b,#e0a92f);
+    box-shadow:0 6px 20px -8px rgba(242,193,78,.7);transition:.18s;
+  }
+  .draw:hover{transform:translateY(-1px)}
+  .draw:disabled{opacity:.45;cursor:default;transform:none}
+
+  /* 舞台 */
+  .stage{min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;position:relative;padding:26px 20px}
+  .hint{color:var(--dim);font-size:13px;text-align:center;line-height:1.9}
+  .hint b{color:var(--muted);font-weight:400}
+
+  .tube{position:relative;width:120px;height:150px;transition:.3s}
+  .tube .stick{position:absolute;left:50%;bottom:52px;width:9px;height:96px;border-radius:4px;
+    background:linear-gradient(180deg,#e8d3a8,#b99a63);transform:translateX(-50%);
+    box-shadow:0 2px 8px rgba(0,0,0,.4);transform-origin:bottom center}
+  .tube .s1{transform:translateX(-50%) rotate(-9deg);background:linear-gradient(180deg,#f2e3c4,#c8ad78)}
+  .tube .s2{transform:translateX(-50%) rotate(2deg);height:104px}
+  .tube .s3{transform:translateX(-50%) rotate(11deg);background:linear-gradient(180deg,#e3c9a0,#b08f57)}
+  .tube .body{position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:96px;height:112px;border-radius:8px 8px 14px 14px;
+    background:linear-gradient(180deg,#8f2b23,#5e1c17);border:1px solid #a4402f;
+    box-shadow:inset 0 8px 18px rgba(0,0,0,.45),0 14px 30px -12px rgba(0,0,0,.8);
+    display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .tube .body::after{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 16px)}
+  .tube .body span{font-size:26px;color:#f7d989;letter-spacing:.1em;z-index:1;opacity:.9;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .tube .mouth{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);
+    width:100px;height:14px;border-radius:50%;background:#2a1512;box-shadow:inset 0 3px 8px rgba(0,0,0,.9)}
+
+  @keyframes shake{
+    0%,100%{transform:rotate(0) translateY(0)}
+    15%{transform:rotate(-4deg) translateY(-3px)}
+    30%{transform:rotate(4deg) translateY(2px)}
+    45%{transform:rotate(-3deg) translateY(-4px)}
+    60%{transform:rotate(3deg) translateY(1px)}
+    78%{transform:rotate(-1.5deg) translateY(-2px)}
+  }
+  .tube.drawing{animation:shake .62s cubic-bezier(.36,.07,.19,.97) infinite}
+  .tube.drawing .s1{transform:translateX(-50%) rotate(-14deg) translateY(-10px)}
+  .tube.drawing .s3{transform:translateX(-50%) rotate(16deg) translateY(-6px)}
+  @keyframes pop{0%{transform:translate(-50%,0) scale(.6);opacity:0}
+    60%{transform:translate(-50%,-70px) scale(1.06);opacity:1}
+    100%{transform:translate(-50%,-56px) scale(1);opacity:1}}
+  .tube .flying{position:absolute;left:50%;bottom:52px;width:11px;height:104px;border-radius:5px;
+    background:linear-gradient(180deg,#fff3d0,#d9b470);animation:pop .5s ease-out forwards;
+    box-shadow:0 0 24px rgba(242,193,78,.7)}
+
+  /* 卡片 */
+  .cards{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:100%}
+  .card{
+    position:relative;width:100%;max-width:340px;padding:20px 20px 18px;border-radius:16px;
+    background:linear-gradient(180deg,#241f19,#1b1713);border:1px solid var(--line);
+    animation:rise .42s cubic-bezier(.2,.8,.3,1) both;cursor:default;
+  }
+  .card.board{cursor:pointer;max-width:300px}
+  .card.board:hover{border-color:#4a3d2c;transform:translateY(-2px);transition:.18s}
+  .card.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset,0 14px 40px -22px rgba(242,193,78,.8)}
+  @keyframes rise{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+
+  .signline{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .signno{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.14em;color:var(--gold);
+    border:1px solid var(--gold-dim);border-radius:6px;padding:3px 8px}
+  .chip{font-size:11px;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+  .chip.gold{color:var(--gold);border-color:var(--gold-dim)}
+  .pname{font-size:21px;font-weight:700;line-height:1.35;margin:0 0 8px}
+  .price{font-family:ui-monospace,Menlo,monospace;font-size:26px;color:var(--text)}
+  .price small{font-size:11px;color:var(--dim);font-family:inherit;margin-left:7px;letter-spacing:.08em}
+  .why{margin:14px 0 0;padding:12px 13px;border-radius:10px;background:#171310;border:1px solid #262019}
+  .why p{margin:0;font-size:13px;line-height:1.85;color:var(--muted)}
+  .why p + p{margin-top:6px}
+  .why .k{color:var(--dim);font-size:11px;letter-spacing:.12em;display:block;margin-bottom:6px}
+  .bars{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+  .bar{display:grid;grid-template-columns:70px 1fr 34px;align-items:center;gap:8px;font-size:11px;color:var(--dim)}
+  .bar i{height:4px;border-radius:2px;background:#2a2318;display:block;overflow:hidden}
+  .bar i b{display:block;height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));width:0;transition:width .6s ease}
+  .bar u{text-decoration:none;font-family:ui-monospace,Menlo,monospace;color:var(--muted);text-align:right}
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+  .actions button{
+    padding:11px 20px;border-radius:11px;font-family:inherit;font-size:14px;cursor:pointer;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--text);transition:.16s;
+  }
+  .actions button:hover{border-color:#4a3d2c;transform:translateY(-1px)}
+  .actions button.primary{background:linear-gradient(180deg,#f6cf6b,#e0a92f);color:#1a1409;border:none;font-weight:700}
+  .actions button:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .actions .sub{display:block;font-size:11px;color:var(--dim);margin-top:3px}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;
+    background:#2a2318;border:1px solid var(--gold-dim);color:var(--gold);
+    padding:10px 18px;border-radius:10px;font-size:13px;transition:.3s;pointer-events:none;z-index:60}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* 图鉴 */
+  .side{display:flex;flex-direction:column;gap:14px}
+  .side .panel{padding:16px}
+  .side h3{margin:0 0 12px;font-size:12px;color:var(--dim);letter-spacing:.16em;font-weight:400}
+  .stat{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px dashed #262019;color:var(--muted)}
+  .stat:last-child{border:none}
+  .stat b{color:var(--text);font-family:ui-monospace,Menlo,monospace}
+  .prog{margin-top:10px;display:flex;flex-direction:column;gap:7px}
+  .prog .row2{display:grid;grid-template-columns:1fr 44px;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+  .prog i{display:block;height:4px;border-radius:2px;background:#2a2318;grid-column:1/-1;overflow:hidden;margin-top:3px}
+  .prog i b{display:block;height:100%;background:linear-gradient(90deg,#8a6d28,var(--gold))}
+  .recbtns{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+  .recbtns button{flex:1 1 0;min-width:64px;padding:7px 6px;font-size:12px;border-radius:8px;
+    background:#211c17;border:1px solid var(--line);color:var(--muted);cursor:pointer;font-family:inherit}
+  .recbtns button:hover{color:var(--text);border-color:#4a3d2c}
+  .recbtns button.like:hover{color:var(--green);border-color:#33502f}
+  .recbtns button.dis:hover{color:var(--red);border-color:#5a2a24}
+
+  /* 弹层 */
+  .sheet{position:fixed;inset:0;background:rgba(8,6,5,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:50;backdrop-filter:blur(3px)}
+  .sheet.on{display:flex}
+  .sheet .box{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px;animation:rise .3s both}
+  .sheet h2{margin:0 0 4px;font-size:17px}
+  .sheet .sub{font-size:12px;color:var(--dim);margin-bottom:16px;line-height:1.7}
+  .kv{display:flex;justify-content:space-between;font-size:13px;padding:9px 0;border-bottom:1px dashed #262019;color:var(--muted)}
+  .kv b{color:var(--text);font-family:ui-monospace,Menlo,monospace}
+  .warn{margin-top:14px;padding:11px 13px;border-radius:10px;font-size:12px;line-height:1.8;
+    background:#241a12;border:1px solid #5a3f1c;color:#e8c98d}
+  .sheet .close{margin-top:16px;width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--text);cursor:pointer;font-family:inherit}
+  .sheet .close:hover{border-color:#4a3d2c}
+  .opts{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .opts button{text-align:left;padding:11px 14px;border-radius:10px;background:var(--panel-2);
+    border:1px solid var(--line);color:var(--text);cursor:pointer;font-family:inherit;font-size:13px}
+  .opts button:hover{border-color:var(--gold-dim)}
+  .opts small{display:block;color:var(--dim);font-size:11px;margin-top:3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">麦门食运局<em>MCFATE</em></div>
+    <div class="tag">交互原型 · 示例菜单数据 · 无真实下单</div>
+  </header>
+
+  <div class="main panel controls" id="controls">
+    <div class="field">
+      <span>模式</span>
+      <div class="seg" id="modes">
+        <button data-mode="blindbox" class="on">命运盲盒</button>
+        <button data-mode="decide">替我决定</button>
+        <button data-mode="save">麦运省钱</button>
+      </div>
+    </div>
+    <div class="field">
+      <span>风格</span>
+      <div class="seg" id="styles">
+        <button data-style="steady">稳妥派</button>
+        <button data-style="balanced">均衡派</button>
+        <button data-style="adventure" class="on">冒险派</button>
+        <button data-style="frugal">精算派</button>
+      </div>
+    </div>
+    <div class="row">
+      <label class="field"><span>预算 ¥</span><input id="budget" type="number" value="35" min="0" step="5"></label>
+      <label class="field"><span>种子</span><input id="seed" type="number" value="2026" step="1"></label>
+      <label class="field"><span>忌口</span><input id="exclude" type="text" placeholder="如：汉堡,咖啡" style="width:150px"></label>
+      <button class="draw" id="draw">抽 签</button>
+    </div>
+  </div>
+
+  <section class="stage panel" id="stage">
+    <div class="hint">
+      签筒里只有真实在售的餐品，抽签规则公开：预算、忌口、风格。<br>
+      <b>点「抽签」开始</b>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="panel">
+      <h3>麦门图鉴</h3>
+      <div id="gallery"><div class="stat">加载中…</div></div>
+    </div>
+    <div class="panel">
+      <h3>本局</h3>
+      <div class="stat"><span>模式</span><b id="mMode">盲盒</b></div>
+      <div class="stat"><span>风格</span><b id="mStyle">冒险派</b></div>
+      <div class="stat"><span>种子</span><b id="mSeed">2026</b></div>
+      <div class="stat"><span>已排除</span><b id="mRej">0</b></div>
+    </div>
+    <div class="panel" style="border-style:dashed">
+      <h3>关于这个原型</h3>
+      <p style="margin:0;font-size:12px;line-height:1.9;color:var(--dim)">
+        界面调用的是同一套 Python 引擎（打分、抽样、券判定），和命令行结果一致。
+        金额只有「官方菜单价」，没有 calculate-price，所以不显示应付金额。
+      </p>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="sheet" id="sheet"><div class="box" id="sheetBox"></div></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const state = {
+  mode: "blindbox", style: "adventure", budget: 35, seed: 2026,
+  exclude: [], rejected: [], result: null, selected: null, prevNames: [],
+};
+
+const MODE_LABEL = { blindbox: "命运盲盒", decide: "替我决定", save: "麦运省钱" };
+const STYLE_LABEL = { steady: "稳妥派", balanced: "均衡派", adventure: "冒险派", frugal: "精算派" };
+const COMP_LABEL = { novelty: "新鲜感", preference: "偏好", diversity: "差异度", mission_fit: "任务契合" };
+
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("on");
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove("on"), 2200);
+}
+
+function syncMeta() {
+  $("#mMode").textContent = MODE_LABEL[state.mode];
+  $("#mStyle").textContent = STYLE_LABEL[state.style];
+  $("#mSeed").textContent = state.seed;
+  $("#mRej").textContent = state.rejected.length;
+}
+
+// —— 控制区 ——
+$("#modes").addEventListener("click", (e) => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  state.mode = btn.dataset.mode;
+  [...$("#modes").children].forEach((b) => b.classList.toggle("on", b === btn));
+  if (state.mode === "blindbox" && state.style === "balanced") setStyle("adventure");
+  syncMeta();
+});
+$("#styles").addEventListener("click", (e) => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  setStyle(btn.dataset.style);
+});
+function setStyle(style) {
+  state.style = style;
+  [...$("#styles").children].forEach((b) => b.classList.toggle("on", b.dataset.style === style));
+  syncMeta();
+}
+$("#budget").addEventListener("input", () => { state.budget = Number($("#budget").value) || 0; });
+$("#seed").addEventListener("input", () => { state.seed = Number($("#seed").value) || 1; syncMeta(); });
+$("#exclude").addEventListener("input", () => {
+  state.exclude = $("#exclude").value.split(/[,，\s]+/).filter(Boolean);
+});
+$("#draw").addEventListener("click", () => draw());
+
+// —— 抽签 ——
+async function draw(extra) {
+  const payload = Object.assign({
+    mode: state.mode, style: state.style, budget: state.budget, seed: state.seed,
+    exclude: state.exclude, rejected: state.rejected,
+  }, extra || {});
+
+  $("#draw").disabled = true;
+  renderTube();
+  const tube = document.querySelector(".tube");
+  if (tube) tube.classList.add("drawing");
+
+  const started = Date.now();
+  let data;
+  try {
+    const res = await fetch("/api/recommend", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    data = await res.json();
+  } catch (err) {
+    $("#draw").disabled = false;
+    return toast("引擎没响应，确认 demo/server.py 还在跑");
+  }
+
+  // 让抖动至少有节奏，不要一闪而过
+  const wait = Math.max(0, 700 - (Date.now() - started));
+  await new Promise((r) => setTimeout(r, wait));
+  $("#draw").disabled = false;
+
+  if (!data.ok) {
+    toast(data.error || "没抽成，换个条件试试");
+    $("#stage").innerHTML = `<div class="hint">${data.error || "无法推荐"}<br><b>${data.hint || ""}</b></div>`;
+    return;
+  }
+  state.result = data;
+  state.selected = data.cards.length === 1 ? data.cards[0].code : null;
+  renderResult(data);
+}
+
+function renderTube() {
+  $("#stage").innerHTML = `
+    <div class="tube">
+      <div class="stick s1"></div><div class="stick s2"></div><div class="stick s3"></div>
+      <div class="mouth"></div>
+      <div class="body"><span>麦</span></div>
+    </div>
+    <div class="hint">签筒摇动中…</div>`;
+}
+
+// —— 结果渲染 ——
+function renderResult(data) {
+  const tube = document.querySelector(".tube");
+  if (tube) {
+    tube.classList.remove("drawing");
+    tube.insertAdjacentHTML("beforeend", '<div class="flying"></div>');
+  }
+  setTimeout(() => {
+    if (data.turn === "reveal") renderReveal(data);
+    else renderBoard(data);
+  }, 380);
+}
+
+function scoreBars(card) {
+  const c = card.components || {};
+  const rows = Object.keys(COMP_LABEL).map((key) => {
+    const v = Math.round((c[key] || 0) * 100);
+    return `<div class="bar"><span>${COMP_LABEL[key]}</span><i><b data-w="${v}"></b></i><u>${(v / 100).toFixed(2)}</u></div>`;
+  }).join("");
+  return `<div class="bars">${rows}</div>`;
+}
+
+function cardHTML(card, opts) {
+  const board = opts && opts.board;
+  const sel = !board && state.selected === card.code;
+  const budgetNote = card.within_budget === null
+    ? "菜单未返回价格，无法判断"
+    : card.within_budget ? `在 ¥${state.budget} 预算内` : `超出 ¥${state.budget} 预算`;
+  const cls = "card" + (board ? " board" : "");
+  const reasons = (card.reasons || []).slice(0, board ? 2 : 4)
+    .map((r) => `<p>${r}</p>`).join("") || "<p>条件都符合，这一支是抽出来的</p>";
+  const sign = card.sign ? `<span class="signno">第 ${card.sign} 签</span>` : `<span class="signno">${card.mark || ""}</span>`;
+  const gaps = (card.gaps || []).length
+    ? `<p style="color:#8a7a66;font-size:12px">数据说明：${card.gaps.slice(0, 2).join("；")}</p>` : "";
+
+  return `<div class="${cls}" data-code="${card.code}">
+    <div class="signline">${sign}
+      <span class="chip">${card.category}</span>
+      ${card.within_budget === false ? '<span class="chip" style="color:#e07a6f;border-color:#5a2a24">超预算</span>' : ""}
+    </div>
+    <h3 class="pname">${card.name}</h3>
+    <div class="price">${card.price === null ? "价格未提供" : "¥" + card.price.toFixed(1)}
+      <small>官方菜单价 · 未核价</small></div>
+    <div class="why"><span class="k">为什么是它</span>${reasons}${gaps}</div>
+    ${scoreBars(card)}
+    <div class="why" style="padding:9px 13px"><p style="color:#8a7a66">预算：${budgetNote}（菜单价口径）</p></div>
+  </div>`;
+}
+
+function animationFadeIn() {
+  document.querySelectorAll(".bar i b").forEach((b) => {
+    requestAnimationFrame(() => { b.style.width = b.dataset.w + "%"; });
+  });
+}
+
+function renderReveal(data) {
+  const card = data.cards[0];
+  const seedHint = `<div class="hint" style="margin-top:2px">仪式句：${escapeHtml((data.reveal_lines || [])[0] || "")} · 本局种子 ${data.seed}</div>`;
+  $("#stage").innerHTML = `<div class="cards">${cardHTML(card)}</div>${seedHint}`;
+  animationFadeIn();
+  renderActions(data);
+}
+
+function renderBoard(data) {
+  const cards = data.cards.map((c) => cardHTML(c, { board: true })).join("");
+  $("#stage").innerHTML = `
+    <div class="hint" style="margin:0 0 4px">今日${["", "一", "两", "三", "四", "五"][data.cards.length] || data.cards.length}签 · 点一张选中，再决定要不要</div>
+    <div class="cards">${cards}</div>
+    <div class="hint" style="margin-top:2px">已按硬性约束排除 ${data.meta.dropped_count} 项 · 本局种子 ${data.seed}</div>`;
+  animationFadeIn();
+  document.querySelectorAll(".card.board").forEach((el) => {
+    el.addEventListener("click", () => {
+      state.selected = el.dataset.code;
+      document.querySelectorAll(".card.board").forEach((x) => x.classList.toggle("sel", x === el));
+      renderActions(data);
+    });
+  });
+  renderActions(data);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+// —— 动作 ——
+function renderActions(data) {
+  const host = document.createElement("div");
+  host.className = "actions";
+  const isBoard = data.turn === "board";
+  const needsPick = isBoard && !state.selected;
+
+  (data.actions || []).forEach((action, i) => {
+    const btn = document.createElement("button");
+    const primary = i === 0 || action.id === "price";
+    if (primary) btn.className = "primary";
+    btn.innerHTML = `${action.label}<span class="sub">${action.hint}</span>`;
+    if (needsPick && (action.id === "take" || action.id === "pick")) {
+      btn.disabled = true;
+      btn.querySelector(".sub").textContent = "先选一张卡";
+    }
+    btn.addEventListener("click", () => onAction(action.id, data));
+    host.appendChild(btn);
+  });
+  const old = document.querySelector(".stage .actions") || document.querySelector(".actions");
+  if (old) old.remove();
+  $("#stage").appendChild(host);
+}
+
+function currentCard() {
+  const cards = (state.result && state.result.cards) || [];
+  return cards.find((c) => c.code === state.selected) || cards[0];
+}
+
+async function onAction(id, data) {
+  if (id === "take" || id === "pick") return showOrder(currentCard(), data);
+  if (id === "again") return redraw(data);
+  if (id === "retune") return showRetune();
+  if (id === "price") return showOrder(currentCard(), data, true);
+}
+
+function redraw(data) {
+  state.rejected = [...new Set([...state.rejected, ...(data.cards || []).map((c) => c.code)])];
+  // 换一个种子，否则同 seed 会抽出同一支（这是设计的确定性，不是 bug）
+  state.seed = state.seed + 1;
+  $("#seed").value = state.seed;
+  syncMeta();
+  draw();
+}
+
+async function showOrder(card, data, fromSave) {
+  if (!card) return;
+  const box = $("#sheetBox");
+  box.innerHTML = `
+    <h2>订单摘要</h2>
+    <div class="sub">${card.name} · ${card.category}${fromSave ? " · 组合核价入口" : ""}</div>
+    <div class="kv"><span>餐品</span><b>${card.name}</b></div>
+    <div class="kv"><span>数量</span><b>1</b></div>
+    <div class="kv"><span>菜单价</span><b>¥${card.price === null ? "未提供" : card.price.toFixed(1)}</b></div>
+    <div class="kv"><span>门店</span><b>演示门店</b></div>
+    <div class="kv"><span>取餐方式</span><b>到店自取</b></div>
+    ${card.sign ? `<div class="kv"><span>签号</span><b>第 ${card.sign} 签</b></div>` : ""}
+    <div class="warn">
+      这不是应付金额。正式流程需要调用 <b>calculate-price</b> 官方算价，
+      演示环境没有该接口，所以这里只给订单摘要，不编造最终价。
+    </div>
+    <div class="recbtns" style="margin-top:14px">
+      <button class="like" data-rec="liked">喜欢</button>
+      <button data-rec="tried">吃过了</button>
+      <button class="dis" data-rec="disliked">不喜欢</button>
+    </div>
+    <button class="close" id="closeSheet">知道了</button>`;
+  $("#sheet").classList.add("on");
+  $("#closeSheet").addEventListener("click", () => $("#sheet").classList.remove("on"));
+  box.querySelectorAll("[data-rec]").forEach((btn) => {
+    btn.addEventListener("click", () => recordItem(card, btn.dataset.rec));
+  });
+}
+
+function showRetune() {
+  const box = $("#sheetBox");
+  box.innerHTML = `
+    <h2>换个口味</h2>
+    <div class="sub">只改一个维度，其余条件保持不变。</div>
+    <div class="opts">
+      <button data-do="budget">把预算降到 ¥${Math.max(15, state.budget - 10)}<small>其余不动，只看压价后还剩下什么</small></button>
+      <button data-do="style">换一种风格<small>在稳妥 / 均衡 / 冒险 / 精算之间轮换</small></button>
+      <button data-do="category">换个品类<small>把当前这支的品类加进忌口</small></button>
+    </div>
+    <button class="close" id="closeSheet">算了</button>`;
+  $("#sheet").classList.add("on");
+  $("#closeSheet").addEventListener("click", () => $("#sheet").classList.remove("on"));
+  box.querySelectorAll("[data-do]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const what = btn.dataset.do;
+      if (what === "budget") {
+        state.budget = Math.max(15, state.budget - 10);
+        $("#budget").value = state.budget;
+      } else if (what === "style") {
+        const order = ["steady", "balanced", "adventure", "frugal"];
+        setStyle(order[(order.indexOf(state.style) + 1) % order.length]);
+      } else if (what === "category") {
+        const card = currentCard();
+        if (card && card.category) {
+          state.exclude = [...new Set([...state.exclude, card.category])];
+          $("#exclude").value = state.exclude.join(",");
+        }
+      }
+      $("#sheet").classList.remove("on");
+      toast("已调整，重新抽一签");
+      draw();
+    });
+  });
+}
+
+async function recordItem(card, status) {
+  const res = await fetch("/api/record", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: card.code, name: card.name, category: card.category, status }),
+  });
+  const data = await res.json();
+  if (!data.ok) return toast(data.error || "记录失败");
+  toast(`已记录：${card.name} · ${{ liked: "喜欢", tried: "吃过了", disliked: "不喜欢" }[status]}`);
+  loadGallery();
+}
+
+// —— 图鉴 ——
+async function loadGallery() {
+  try {
+    const res = await fetch("/api/gallery");
+    const data = await res.json();
+    const s = data.summary || {};
+    const p = data.progress || {};
+    const cats = (p.categories || []).slice(0, 5).map((row) => {
+      const pct = row.total ? Math.round((row.tried / row.total) * 100) : 0;
+      return `<div class="row2"><span>${row.category}</span><span style="text-align:right">${row.tried}/${row.total}</span>
+        <i><b style="width:${pct}%"></b></i></div>`;
+    }).join("");
+    $("#gallery").innerHTML = `
+      <div class="stat"><span>已记录尝试</span><b>${s.tried_count ?? 0} 款</b></div>
+      <div class="stat"><span>覆盖品类</span><b>${(s.categories || []).length} 个</b></div>
+      <div class="stat"><span>喜欢 / 不喜欢</span><b>${s.liked_count ?? 0} / ${s.disliked_count ?? 0}</b></div>
+      <div class="stat"><span>连续记录</span><b>${s.streak_days ?? 0} 天</b></div>
+      ${cats ? `<div class="prog">${cats}</div>` : ""}`;
+  } catch (e) {
+    $("#gallery").innerHTML = `<div class="stat">图鉴读取失败</div>`;
+  }
+}
+
+syncMeta();
+loadGallery();
+</script>
+</body>
+</html>

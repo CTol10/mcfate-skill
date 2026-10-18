@@ -107,38 +107,37 @@ def _coupon_summary(picked: Sequence[Candidate], hints: Dict[str, str]) -> str:
     return "券的适用范围/门槛未全部返回，未计入节省"
 
 
-def cmd_recommend(args: argparse.Namespace) -> int:
-    try:
-        payload = _expand(_load_payload(args.input))
-    except (OSError, ValueError) as exc:
-        _emit({"ok": False, "error": f"输入解析失败：{exc}"})
-        return EXIT_INPUT_ERROR
+def build_recommendation(
+    payload: Dict[str, Any],
+    *,
+    seed: Optional[int] = None,
+    profile_path: Optional[str] = None,
+) -> Dict[str, Any]:
+    """推荐主流程。CLI 与本地 UX 原型共用这一份实现，避免两套逻辑漂移。
 
+    返回结果字典；`ok=False` 表示输入不足或参数非法，由调用方决定退出码。
+    """
     mode = str(payload.get("mode") or "decide")
     style = str(payload.get("style") or ("adventure" if mode == "blindbox" else config.DEFAULT_STYLE))
     if style not in config.STYLE_WEIGHTS:
-        _emit({"ok": False, "error": f"未知风格：{style}", "allowed": sorted(config.STYLE_WEIGHTS)})
-        return EXIT_INPUT_ERROR
+        return {"ok": False, "error": f"未知风格：{style}", "allowed": sorted(config.STYLE_WEIGHTS)}
 
     budget = payload.get("budget")
     budget = None if budget in (None, "", 0) else float(budget)
     exclude = payload.get("exclude") or []
-    seed = _seed(payload.get("seed") if payload.get("seed") is not None else args.seed)
+    seed = _seed(payload.get("seed") if payload.get("seed") is not None else seed)
     rng = _rng(seed)
 
     menu_items = normalize.normalize_menu(payload.get("menu"))
     warnings: List[str] = list(payload.get("_warnings") or [])
     if not menu_items:
-        _emit(
-            {
-                "ok": False,
-                "error": "未解析到任何在售餐品，无法推荐",
-                "hint": "请确认已调用 query-meals 并传入其原始返回；不要凭接口名臆造数据",
-            }
-        )
-        return EXIT_INPUT_ERROR
+        return {
+            "ok": False,
+            "error": "未解析到任何在售餐品，无法推荐",
+            "hint": "请确认已调用 query-meals 并传入其原始返回；不要凭接口名臆造数据",
+        }
 
-    profile = Profile.from_dict(payload.get("profile")) if payload.get("profile") else Profile.load(Path(args.profile) if args.profile else default_path())
+    profile = Profile.from_dict(payload.get("profile")) if payload.get("profile") else Profile.load(Path(profile_path) if profile_path else default_path())
     warnings.extend(profile.warnings)
     if not profile.history_reliable:
         warnings.append("个人档案中没有明确标记的尝试记录，新鲜感/偏好按中性值计算")
@@ -251,8 +250,19 @@ def cmd_recommend(args: argparse.Namespace) -> int:
         ]
         result["next_actions"] = [action["label"] for action in result["actions"]]
 
+    return result
+
+
+def cmd_recommend(args: argparse.Namespace) -> int:
+    try:
+        payload = _expand(_load_payload(args.input))
+    except (OSError, ValueError) as exc:
+        _emit({"ok": False, "error": f"输入解析失败：{exc}"})
+        return EXIT_INPUT_ERROR
+    result = build_recommendation(payload, seed=args.seed, profile_path=args.profile)
     _emit(result, args.output)
-    return EXIT_OK
+    return EXIT_OK if result.get("ok") else EXIT_INPUT_ERROR
+
 
 
 def cmd_rerank(args: argparse.Namespace) -> int:

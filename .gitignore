@@ -3,3 +3,4 @@ __pycache__/
 .mcfate/
 *.tmp
 mcfate-profile-export.json
+demo/.demo-profile.json

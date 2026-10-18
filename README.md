@@ -48,7 +48,10 @@ mcfate/
 │   │   ├── render.py            # 回合渲染：reveal 揭晓 / board 摆盘
 │   │   └── cli.py               # 子命令编排
 │   └── tests/                   # 109 个单元/端到端测试
-└── examples/                    # 可运行 payload 与真实输出
+├── examples/                    # 可运行 payload 与真实输出
+└── demo/                        # 本地 UX 原型（调同一套引擎，非第二份实现）
+    ├── server.py                # 127.0.0.1 本地服务，复用 cli.build_recommendation
+    └── index.html               # 抽签 → 揭晓 → 三动作 → 图鉴
 ```
 
 ## 三、MCP 调用流程
@@ -117,6 +120,24 @@ cd mcfate/scripts && python3 -m unittest discover -s tests -t .
 | 无历史订单数据                   | MCP 不提供订单历史                                   | 图鉴只用显式标记，不推断“吃过”          |
 | 菜单无库存/售罄字段                | `query-meals` 未返回库存                           | 以官方算价/下单结果为最终判断           |
 | 无正式比赛规则文档                 | 仓库无 README/RANKING.md                         | 按通用 Agent Skill 规范实现，见第八节 |
+
+## 六点五、交互原型（想先看效果就跑这个）
+
+命令行只能读到 JSON，感受不到「抽」这件事。`demo/` 提供一个能点着玩的界面：
+
+```bash
+python demo/server.py            # http://127.0.0.1:8788
+```
+
+签筒抖动 → 飞签 → 卡片浮现 → 三个动作。抽签走的是真引擎
+（`cli.build_recommendation`），签号是 `sign_no(seed, code)` 算出来的真号，
+不是我随手写的装饰数字。
+
+**没有前端重写算法**——如果 JS 另写一份打分，演示就会和 Skill 真实行为漂移，
+演示越好看误导越深。所以 `server.py` 就是 `import mcfate_core`。
+
+边界也写在界面上：演示环境没有 `calculate-price`，所以「就它了」只给订单摘要，
+并明确标注「这不是应付金额」。宁可少给一个数字，也不编一个。
 
 ## 七、本地运行（至少 5 个中文示例）
 
